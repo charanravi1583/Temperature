@@ -1,0 +1,61 @@
+#include <stdio.h>
+
+int main() {
+    FILE *inputFile, *outputFile;
+    int num;
+    int min = 0, max = 0, sum = 0, count = 0;
+
+    inputFile = fopen("C:\\Users\\nithi\\OneDrive\\Documents\\Temperature_data.csv", "r");
+    if (inputFile == NULL) {
+        printf("Error opening input file.\n");
+        return 1;
+    }
+
+    // Skip BOM if present
+    unsigned char c1 = fgetc(inputFile);
+    if (c1 != 0xEF) {
+        ungetc(c1, inputFile); // No BOM
+    } else {
+        fgetc(inputFile); // Skip 0xBB
+        fgetc(inputFile); // Skip 0xBF
+    }
+
+    outputFile = fopen("C:\\Users\\nithi\\OneDrive\\Documents\\Output.csv", "w");
+    if (outputFile == NULL) {
+        printf("Error opening output file.\n");
+        fclose(inputFile);
+        return 1;
+    }
+
+    // Read numbers line by line
+    while (fscanf(inputFile, "%d", &num) == 1) {
+        if (count == 0) {
+            min = max = num;
+        } else {
+            if (num < min) min = num;
+            if (num > max) max = num;
+        }
+
+        sum += num;
+        count++;
+
+        if (num > 95) {
+            fprintf(outputFile, "%d\n", num);
+        }
+    }
+
+    fclose(inputFile);
+    fclose(outputFile);
+
+    if (count > 0) {
+        float average = (float)sum / count;
+        printf("Minimum temperature recorded across all sensors : %d\n", min);
+        printf("Maximum temperature recorded across all sensors: %d\n", max);
+        printf("Average temperature recorded across all sensors: %.2f\n", average);
+        printf("Temperatures > 95 are copied to Output.csv\n");
+    } else {
+        printf("No numbers found in the input file.\n");
+    }
+
+    return 0;
+}
